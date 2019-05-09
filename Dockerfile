@@ -28,13 +28,16 @@ RUN echo mail > /etc/hostname; \
         libpq-dev \
         libgd-dev \
         libssl-dev \
+	libdbd-mysql-perl \
+	libnet-ldap-perl \
         lighttpd \
         openssl \
         perl \
         postfix \
         postgresql-client \
         ssl-cert \
-        supervisor && \
+        cron \
+	supervisor && \
 # Create user and group
     groupadd -r rt-service && \
     useradd -r -g rt-service -G www-data rt-service && \
@@ -83,16 +86,15 @@ COPY 89-rt.conf /etc/lighttpd/conf-available/89-rt.conf
 COPY supervisord.conf /etc/supervisor/supervisord.conf
 
 RUN chmod +x /entrypoint.sh && \
-    sed -i '6 a ssl.ca-file = "/etc/lighttpd/server-chain.pem"' \
-        /etc/lighttpd/conf-available/10-ssl.conf && \
     /usr/sbin/lighty-enable-mod rt && \
-    /usr/sbin/lighty-enable-mod ssl && \
     chmod 770 /opt/rt4/etc && \
     chmod 660 /opt/rt4/etc/RT_SiteConfig.pm && \
     chown rt-service:www-data /opt/rt4/var && \
-    chmod 0770 /opt/rt4/var
+    chmod 0770 /opt/rt4/var && \
+    touch /opt/rt4/var/log/rt.log && \
+    chown www-data:www-data /opt/rt4/var/log/rt.log
 
-EXPOSE 443
+EXPOSE 80
 
 ENTRYPOINT ["/entrypoint.sh"]
 
