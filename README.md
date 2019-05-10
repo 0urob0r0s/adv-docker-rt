@@ -1,14 +1,10 @@
-# docker-rt
+# adv-docker-rt
 
-[RT](https://www.bestpractical.com/rt/), or Request Tracker, is a issue tracking system. Currently build RT lastest (4.4.x) and RT 4.2.12.
+[RT](https://www.bestpractical.com/rt/), or Request Tracker, is a issue tracking system. Currently build RT lastest (4.4.x).
 
 ## Requirements
 
-In this first build this container makes some assumptions that might not be for everyone. The container is only built to use Postgresql. You also have to use SSL/TLS and have a directory with the following files shared with the container at startup:
 
-* RT_SiteConfig.pm
-* server-chain.pem
-* server.pem
 
 ## Usage
 
@@ -19,24 +15,11 @@ To run docker-rt (change to <full path> to the location of the files specified a
 * `-e RT_HOSTNAME=<RT server hostname>`
 * `-e RT_RELAYHOST=<Postfix relay host>`
 
-## Upgrade from 4.2.12 to 4.4.x
 
-The steps I took:
+## Build
 
-    # Backup database first
-    docker stop rt
-    run -ti -p 443:443 -e RT_HOSTNAME=<hostname> -e RT_RELAYHOST=<host> -v /docker:/data:ro --name rt44 -d reuteras/docker-rt
-    docker exec -ti rt44 /bin/bash
-    rt# cd /opt/rt4
-    rt# ./sbin/rt-setup-database --action upgrade
-    rt# exit
-    # Clean up and restart with correct name
-    docker stop rt44
-    docker rm rt
-    docker rm rt44
-    run -ti -p 443:443 -e RT_HOSTNAME=<hostname> -e RT_RELAYHOST=<host> -v /docker:/data:ro --name rt -d reuteras/docker-rt
 
-The same steps can be used for upgrades from 4.4.x to 4.4.y where y>x.
+
 
 ## Install
 
