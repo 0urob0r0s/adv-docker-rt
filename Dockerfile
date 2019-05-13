@@ -44,14 +44,16 @@ RUN echo mail > /etc/hostname; \
     usermod -a -G rt-service www-data && \
     mkdir -p --mode=750 /opt/rt4 && \
     chown rt-service:www-data /opt/rt4 && \
+    unlink /usr/local/man && \
     mkdir -p /tmp/rt && \
     curl -SL https://download.bestpractical.com/pub/rt/release/rt.tar.gz | \
         tar -xzC /tmp/rt && \
     cd /tmp/rt/rt* && \
     echo "o conf init " | \
         perl -MCPAN -e shell && \
-    cpan install inc::Module::Install  && \
+    cpan install inc::Module::Install && \
     cpan install inc::Module::Package && \
+    cpan install Parse::BooleanLogic  && \
     ./configure \
         --enable-graphviz \
         --enable-gd \
