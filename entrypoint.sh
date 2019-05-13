@@ -174,6 +174,38 @@ if [ "${RT_DBTYPE:-mysql}" = "mysql" ]; then
 	echo "0 23 * * * /opt/rt4/sbin/rt-fulltext-indexer --quiet" >> /tmp/mycron
 fi
 
+# Install / Enable RTIR
+if [ "${RT_RTIR}" = "1" ]; then
+
+        # Enable RTIR
+        echo "Set(@Plugins, 'RT::IR');" > ${rt_configd}/rtir.pm
+
+        if [ ! -d /opt/rt4/local/plugins/RT-IR ]; then
+
+                rtir_ver=${RT_RTIR_VER:-4.0.1}
+                rtir_log=/tmp/rtir_setup.log
+                curl -SL https://download.bestpractical.com/pub/rt/release/RT-IR-${rtir_ver}.tar.gz | tar --overwrite -xzC /tmp/
+
+                # Install RTIR
+                if [ -d /tmp/RT-IR-${rtir_ver} ]; then
+
+                        cd /tmp/RT-IR-${rtir_ver}
+                        perl Makefile.PL > ${rtir_log}
+                        make install >> ${rtir_log}
+
+                        /usr/bin/perl -I. -Ilib -I/opt/rt4/local/lib -I/opt/rt4/lib /opt/rt4/sbin/rt-setup-database \
+                        --action insert --datadir etc --datafile /tmp/RT-IR-${rtir_ver}/etc/initialdata \
+                        --skip-create --package RT::IR --ext-version ${rtir_ver} >> ${rtir_log}
+
+                fi
+
+        fi
+
+else
+        # Disable RTIR
+        echo "# Set RT_RTIR=1 as Docker ENV to enable RTIR" > ${rt_configd}/rtir.pm
+
+fi
 
 #### Cron Setup
 crontab /tmp/mycron >/dev/null 2>&1
