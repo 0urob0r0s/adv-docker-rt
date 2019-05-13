@@ -53,7 +53,7 @@ RUN echo mail > /etc/hostname; \
         perl -MCPAN -e shell && \
     cpan install inc::Module::Install && \
     cpan install inc::Module::Package && \
-    cpan install Parse::BooleanLogic  && \
+    cpan install Parse::BooleanLogic && \
     ./configure \
         --enable-graphviz \
         --enable-gd \
