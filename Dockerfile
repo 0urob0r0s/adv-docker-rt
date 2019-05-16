@@ -30,6 +30,7 @@ RUN echo mail > /etc/hostname; \
         libssl-dev \
 	libdbd-mysql-perl \
 	libnet-ldap-perl \
+	libcache-cache-perl \
         lighttpd \
         openssl \
         perl \
@@ -37,6 +38,7 @@ RUN echo mail > /etc/hostname; \
         postgresql-client \
         ssl-cert \
         cron \
+        amqp-tools \
 	supervisor && \
 # Create user and group
     groupadd -r rt-service && \
@@ -44,7 +46,7 @@ RUN echo mail > /etc/hostname; \
     usermod -a -G rt-service www-data && \
     mkdir -p --mode=750 /opt/rt4 && \
     chown rt-service:www-data /opt/rt4 && \
-    unlink /usr/local/man && \
+    unlink /usr/local/man  && \
     mkdir -p /tmp/rt && \
     curl -SL https://download.bestpractical.com/pub/rt/release/rt.tar.gz | \
         tar -xzC /tmp/rt && \
@@ -53,7 +55,7 @@ RUN echo mail > /etc/hostname; \
         perl -MCPAN -e shell && \
     cpan install inc::Module::Install && \
     cpan install inc::Module::Package && \
-    cpan install Parse::BooleanLogic && \
+    cpan install Parse::BooleanLogic  && \
     ./configure \
         --enable-graphviz \
         --enable-gd \
@@ -80,14 +82,17 @@ RUN echo mail > /etc/hostname; \
     rm -rf /root/.cpan && \
     rm -rf /root/.cpanm && \
     rm -rf /preseed.txt /usr/share/doc && \
+    rm -rf /tmp/rt/ && \
     rm -rf /usr/local/share/man /var/cache/debconf/*-old
 
 # Copy files to docker
 COPY entrypoint.sh /entrypoint.sh
+COPY wrapper.sh /root/wrapper.sh
 COPY 89-rt.conf /etc/lighttpd/conf-available/89-rt.conf
 COPY supervisord.conf /etc/supervisor/supervisord.conf
 
 RUN chmod +x /entrypoint.sh && \
+    chmod +x /root/wrapper.sh && \
     /usr/sbin/lighty-enable-mod rt && \
     chmod 770 /opt/rt4/etc && \
     chmod 660 /opt/rt4/etc/RT_SiteConfig.pm && \

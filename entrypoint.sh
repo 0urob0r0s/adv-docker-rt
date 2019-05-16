@@ -5,6 +5,9 @@ set -e
 rt_config=/data/RT_SiteConfig.pm
 rt_configd=/opt/rt4/etc/RT_SiteConfig.d
 
+# Set local resolution
+echo "127.0.0.1 ${RT_NAME:-rt.example.com}" >> /etc/hosts
+
 # Basic Settings
 echo 'Set($rtname, "RT_NAME");' | sed -e "s=RT_NAME=${RT_NAME:-rt.example.com}=" > ${rt_config}
 echo 'Set($WebDomain, "RT_NAME");' | sed -e "s=RT_NAME=${RT_NAME:-rt.example.com}=" >> ${rt_config}
@@ -174,40 +177,63 @@ if [ "${RT_DBTYPE:-mysql}" = "mysql" ]; then
 	echo "0 23 * * * /opt/rt4/sbin/rt-fulltext-indexer --quiet" >> /tmp/mycron
 fi
 
+
+
 # Install / Enable RTIR
 if [ "${RT_RTIR}" = "1" ]; then
 
-        # Enable RTIR
+	# Enable RTIR
         echo "Set(@Plugins, 'RT::IR');" > ${rt_configd}/rtir.pm
 
-        if [ ! -d /opt/rt4/local/plugins/RT-IR ]; then
+	if [ ! -d /opt/rt4/local/plugins/RT-IR ]; then
+		
+		rtir_ver=${RT_RTIR_VER:-4.0.1}
+		rtir_log=/tmp/rtir_setup.log
+		curl -SL https://download.bestpractical.com/pub/rt/release/RT-IR-${rtir_ver}.tar.gz | tar --overwrite -xzC /tmp/
 
-                rtir_ver=${RT_RTIR_VER:-4.0.1}
-                rtir_log=/tmp/rtir_setup.log
-                curl -SL https://download.bestpractical.com/pub/rt/release/RT-IR-${rtir_ver}.tar.gz | tar --overwrite -xzC /tmp/
+		# Install RTIR
+		if [ -d /tmp/RT-IR-${rtir_ver} ]; then
+	
+			cd /tmp/RT-IR-${rtir_ver}
+			perl Makefile.PL > ${rtir_log}
+			make install >> ${rtir_log}
 
-                # Install RTIR
-                if [ -d /tmp/RT-IR-${rtir_ver} ]; then
+			/usr/bin/perl -I. -Ilib -I/opt/rt4/local/lib -I/opt/rt4/lib /opt/rt4/sbin/rt-setup-database \
+			--action insert --datadir etc --datafile /tmp/RT-IR-${rtir_ver}/etc/initialdata \
+			--skip-create --package RT::IR --ext-version ${rtir_ver} >> ${rtir_log}
 
-                        cd /tmp/RT-IR-${rtir_ver}
-                        perl Makefile.PL > ${rtir_log}
-                        make install >> ${rtir_log}
+		fi
 
-                        /usr/bin/perl -I. -Ilib -I/opt/rt4/local/lib -I/opt/rt4/lib /opt/rt4/sbin/rt-setup-database \
-                        --action insert --datadir etc --datafile /tmp/RT-IR-${rtir_ver}/etc/initialdata \
-                        --skip-create --package RT::IR --ext-version ${rtir_ver} >> ${rtir_log}
-
-                fi
-
-        fi
+	fi
 
 else
-        # Disable RTIR
-        echo "# Set RT_RTIR=1 as Docker ENV to enable RTIR" > ${rt_configd}/rtir.pm
+	# Disable RTIR
+	echo "# Set RT_RTIR=1 as Docker ENV to enable RTIR" > ${rt_configd}/rtir.pm
 
 fi
 
+
+#### Queue consumption for Incoming Messages
+declare -a array_queue=(${FETCHMAIL_ENV_FETCH_QUEUES})
+max_iteration=${#array_queue[@]}
+
+# Load Variables
+amqp_connect_link="amqp://${FETCHMAIL_ENV_FETCH_MQ_USER:-${RABBITMQ_ENV_RABBITMQ_DEFAULT_USER:-guest}}:${FETCHMAIL_ENV_FETCH_MQ_PASS:-${RABBITMQ_ENV_RABBITMQ_DEFAULT_PASS:-guest}}@${FETCHMAIL_ENV_FETCH_MQ_HOST:-rabbitmq}:${FETCHMAIL_ENV_FETCH_MQ_PORT:-5672}"
+amqp_connect=${RT_MQ_URI:-${amqp_connect_link}}
+
+# Generate Cronlines
+if [ ${max_iteration} -gt 0 ]; then
+
+	for i in $(seq 0 $((max_iteration-1))); do
+	echo "* * * * * /usr/bin/flock -n /tmp/amqp-${array_queue[$i]}.lockfile /usr/bin/amqp-consume -c ${RT_MQ_RECYCLE:-100} -q '${array_queue[$i]}' --url='${amqp_connect}' /root/wrapper.sh '${array_queue[$i]}'" >> /tmp/mycron
+	done
+
+fi
+
+
 #### Cron Setup
+declare -p | grep -Ev 'BASHOPTS|BASH_VERSINFO|EUID|PPID|SHELLOPTS|UID' > /container.env
+
 crontab /tmp/mycron >/dev/null 2>&1
 rm /tmp/mycron >/dev/null 2>&1
 
