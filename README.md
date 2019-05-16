@@ -83,10 +83,10 @@ Pay special attention to the linked server aliases, only specific ones could be 
 
 **Useful links**
 
-RT and RTIR latest versions (use to get RT_RTIR_VER) - https://download.bestpractical.com/pub/rt/release/
-RTIR documentation - https://docs.bestpractical.com/rtir/4.0.0/README.html
-List of timezones - https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-Some extra steps inside RT - https://rt-wiki.bestpractical.com/wiki/ItsFinallyInstalledNowWhat#Allowing_users_to_open_tickets_via_E-mail
+ - RT and RTIR latest versions (use to get RT_RTIR_VER) - https://download.bestpractical.com/pub/rt/release/
+ - RTIR documentation - https://docs.bestpractical.com/rtir/4.0.0/README.html
+ - List of timezones - https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+ - Some extra steps inside RT - https://rt-wiki.bestpractical.com/wiki/ItsFinallyInstalledNowWhat#Allowing_users_to_open_tickets_via_E-mail
 
 
 **Head over the folder `ComposeFiles` on the repo for complete examples.**
