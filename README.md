@@ -36,6 +36,7 @@ in order to provide internal fetchmail retrieval services.
       RT_DBNAME: myrtdb                         #Schema Name
       RT_DBUSER: rtuser                               #Schema user
       RT_DBPASS: rtpass                               #Schema pass
+      RT_URL: rt.example.com                          #Hostname / Server URL
       RT_LBURL: https://rt.example.com                #External Loadbalancer URL
       RT_LDAP: '1'                                    #Enable LDAP Support
       RT_LDAP_ATTR_ACCOUNT: sAMAccountName            #Account Attribute
@@ -60,7 +61,7 @@ in order to provide internal fetchmail retrieval services.
       RT_LOGPROTO: tcp                                            #Syslog protocol
       RT_MAILOWNER: rtowner@example.com                           #Email for sending errors and alerts
       RT_MAXATTACH: 10*1024*1024                                  #Max attachment size (example = 10Mb)
-      RT_NAME: rt.example.com                                     #RT installation Name
+      RT_NAME: My RT4                                             #RT installation Name
       RT_ORG: example.com                                         #RT Org
       RT_RELAYHOST: 1.2.3.4                                       #SMTP relay host
       RT_TIMEZONE: Europe/Zurich                                  #App Timezone
