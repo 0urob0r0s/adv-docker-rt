@@ -1,0 +1,96 @@
+version: '2'
+services:
+  RT-Database:
+    image: mariadb
+    environment:
+      MYSQL_DATABASE: rt-mysql
+      MYSQL_USER: rt-user
+      MYSQL_PASSWORD: rt-password
+      MYSQL_ROOT_PASSWORD: mypassword
+    stdin_open: true
+    volumes:
+    - /volumes/rt-adv/mysql:/var/lib/mysql
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+  RT4:
+    image: 0urob0r0s/docker-adv-rt:latest
+    environment:
+      RT_LBURL: https://rt.example.com
+      RT_LDAP: '1'
+      RT_LDAP_ATTR_ACCOUNT: sAMAccountName
+      RT_LDAP_ATTR_MAIL: mail
+      RT_LDAP_ATTR_NAME: cn
+      RT_LDAP_ATTR_ORG: physicalDeliveryOfficeName
+      RT_LDAP_BASE: CN=Users,DC=domain,DC=local
+      RT_LDAP_FILTER: (&(objectClass=user))
+      RT_LDAP_GROUP: CN=RT-enabled,CN=Users,DC=domain,DC=local
+      RT_LDAP_GRPATTR: member
+      RT_LDAP_GRPATTR_VALUE: dn
+      RT_LDAP_GRPFILTER: (&(objectClass=group))
+      RT_LDAP_USER: ldap-user
+      RT_LDAP_PASS: ldap-password
+      RT_LDAP_PORT: '389'
+      RT_LDAP_SERVER: ldap://1.2.3.4
+      RT_LDAP_VER: '3'
+      RT_LOGHOST: 1.2.3.4
+      RT_LOGID: RT4
+      RT_LOGLEVEL: debug
+      RT_LOGPORT: '514'
+      RT_LOGPROTO: tcp
+      RT_MAILOWNER: alerts@example.com
+      RT_MAXATTACH: 10*1024*1024
+      RT_NAME: rt.example.com
+      RT_ORG: example.com
+      RT_RELAYHOST: 1.2.3.4
+      RT_TIMEZONE: Europe/Zurich
+      RT_RTIR: '1'
+      RT_RTIR_VER: 4.0.1
+      RT_MQ_RECYCLE: '10'
+    stdin_open: true
+    volumes:
+    - /volumes/rt-adv/autocfg:/data
+    - /volumes/rt-adv/config.d:/opt/rt4/etc/RT_SiteConfig.d
+    - /volumes/rt-adv/plugins:/opt/rt4/local/plugins
+    tty: true
+    links:
+    - RT-Database:database
+    - MessageQueue:rabbitmq
+    - Fetchmail:fetchmail
+    labels:
+      io.rancher.container.hostname_override: container_name
+  MessageQueue:
+    image: 0urob0r0s/rancher-auto-rabbitmq:latest
+    environment:
+      RABBITMQ_ERLANG_COOKIE: mycookie1234
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    stdin_open: true
+    volumes:
+    - /volumes/rt-adv/rabbitmq:/var/lib/rabbitmq
+    tty: true
+    ports:
+    - 15672:15672/tcp
+    - 5672:5672/tcp
+    labels:
+      io.rancher.scheduler.global: 'true'
+      io.rancher.container.hostname_override: container_name
+  Fetchmail:
+    image: 0urob0r0s/docker-fetchmail-mq:latest
+    environment:
+      FETCH_USERS: tickets@example.com
+      FETCH_PASS: myemailpass
+      FETCH_QUEUES: Tickets
+      FETCH_SYNC: '10'
+      FETCH_TIMEOUT: '10'
+      FETCH_POP3_SERVER: pop.gmail.com
+      FETCH_EXTRA: --verbose
+    stdin_open: true
+    volumes:
+    - /volumes/rt-adv/fetchmail:/opt
+    tty: true
+    links:
+    - MessageQueue:rabbitmq
+    labels:
+      io.rancher.scheduler.global: 'true'
