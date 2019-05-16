@@ -23,7 +23,7 @@ in order to provide internal fetchmail retrieval services.
 - Syslog support.
 - RTIR available optionally.
 - Loadbalancer support.
-- RabbitMQ integration for distributed incoming email handling.
+- Fetchmail/RabbitMQ integration for distributed incoming email handling.
 - Nodes with integrated healhcheck for self-healing, recovery.
 
 **Usage**
