@@ -3,7 +3,7 @@
  **Overview**
 
 Provides a fully configurable Request Tracker 4 with Optional RTIR installation.
-The full proyect includes RabbitMQ and Fetchmail support dockers, incoming email handling.
+The full proyect includes RabbitMQ and Fetchmail support dockers for incoming email handling.
 
 Full Services Failover and high availability on incoming email handling if deployed using Rancher.
 
