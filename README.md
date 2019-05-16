@@ -1,61 +1,84 @@
-# docker-rt
+# Advanced fully configurable Docker Request Tracker 4
 
-[RT](https://www.bestpractical.com/rt/), or Request Tracker, is a issue tracking system. Currently build RT lastest (4.4.x) and RT 4.2.12.
+ **Overview**
 
-## Requirements
+Provides a fully configurable Request Tracker 4 with Optional RTIR installation.
+The full proyect includes RabbitMQ and Fetchmail support dockers, incoming email handling.
 
-In this first build this container makes some assumptions that might not be for everyone. The container is only built to use Postgresql. You also have to use SSL/TLS and have a directory with the following files shared with the container at startup:
+Full Services Failover and high availability on incoming email handling if deployed using Rancher.
 
-* RT_SiteConfig.pm
-* server-chain.pem
-* server.pem
+**Caveats**
 
-## Usage
+The complete stack will not work on standard docker environments as it relies on
+Rancher's Metadata Service for the autodiscovery feature.
 
-To run docker-rt (change to <full path> to the location of the files specified above):
+This container could also be deployed standalone on any docker host but modifications will be required
+in order to provide internal fetchmail retrieval services.
 
-        docker run -ti -p 443:443 -e RT_HOSTNAME=rt.example.com -e RT_RELAYHOST=mail.example.com -v /<full path>/docker-rt/files:/data --name rt -d reuteras/docker-rt
+**Features**
 
-* `-e RT_HOSTNAME=<RT server hostname>`
-* `-e RT_RELAYHOST=<Postfix relay host>`
+- Automatic Database integration + Fulltext indexing if deployed alongisde MariaDB linked container. 
+- Fully configurable through Docker ENV vars.
+- Active Directory/LDAP support.
+- Syslog support.
+- RTIR optionally available.
+- Loadbalancer support.
+- RabbitMQ integration for distributed incoming email handling.
+- Nodes with integrated healhcheck for self-healing, recovery.
 
-## Upgrade from 4.2.12 to 4.4.x
+**Usage**
 
-The steps I took:
+*Available ENVIRONMENT Variables*
 
-    # Backup database first
-    docker stop rt
-    run -ti -p 443:443 -e RT_HOSTNAME=<hostname> -e RT_RELAYHOST=<host> -v /docker:/data:ro --name rt44 -d reuteras/docker-rt
-    docker exec -ti rt44 /bin/bash
-    rt# cd /opt/rt4
-    rt# ./sbin/rt-setup-database --action upgrade
-    rt# exit
-    # Clean up and restart with correct name
-    docker stop rt44
-    docker rm rt
-    docker rm rt44
-    run -ti -p 443:443 -e RT_HOSTNAME=<hostname> -e RT_RELAYHOST=<host> -v /docker:/data:ro --name rt -d reuteras/docker-rt
+      RT_DBTYPE: mysql
+      RT_DBHOST: 1.2.3.4
+      RT_DBPORT: 3306
+      RT_DBNAME: myrtdb
+      RT_DBUSER: rtuser
+      RT_DBPASS: rtpass
+      RT_LBURL: https://rt.example.com
+      RT_LDAP: '1'
+      RT_LDAP_ATTR_ACCOUNT: sAMAccountName
+      RT_LDAP_ATTR_MAIL: mail
+      RT_LDAP_ATTR_NAME: cn
+      RT_LDAP_ATTR_ORG: physicalDeliveryOfficeName
+      RT_LDAP_BASE: CN=Users,DC=domain,DC=local
+      RT_LDAP_FILTER: (&(objectClass=user))
+      RT_LDAP_GROUP: CN=RT-enabled,CN=Users,DC=domain,DC=local
+      RT_LDAP_GRPATTR: member
+      RT_LDAP_GRPATTR_VALUE: dn
+      RT_LDAP_GRPFILTER: (&(objectClass=group))
+      RT_LDAP_PASS: ldapRequestTrackerPass
+      RT_LDAP_PORT: '389'
+      RT_LDAP_SERVER: ldap://mydomain.local
+      RT_LDAP_USER: ldap-rt-user
+      RT_LDAP_VER: '3'
+      RT_LOGHOST: 1.2.3.4
+      RT_LOGID: RT4
+      RT_LOGLEVEL: debug
+      RT_LOGPORT: '514'
+      RT_LOGPROTO: tcp
+      RT_MAILOWNER: rtowner@example.com
+      RT_MAXATTACH: 10*1024*1024
+      RT_NAME: rt.example.com
+      RT_ORG: example.com
+      RT_RELAYHOST: 1.2.3.4
+      RT_TIMEZONE: Europe/Zurich
+      RT_RTIR: '1'
+      RT_RTIR_VER: 4.0.1
+      RT_MQ_RECYCLE: '10'
 
-The same steps can be used for upgrades from 4.4.x to 4.4.y where y>x.
 
-## Install
+**Important**
 
-In my environment I still use an vm to run Postgresql. Because of that I haven't scripted any default setup to automatically use a linked database container. Something like the following should help you get started.
+The easiest way for deploying this is through one of the docker_compose example files.
+Pay special attention to the linked server aliases, only specific ones could be used for the automation to work.
 
-    # Change mysecretpassword to something better
-    docker run --name postgres -e POSTGRES_PASSWORD=mysecretpassword -d postgres
-    docker inspect postgres | grep IPAddress
-    # edit RT_SiteConfig.pm and insert the IP Address
-    docker run -ti -p 443:443 -e RT_HOSTNAME=servername -e RT_RELAYHOST=servername -v $(pwd)/files:/data --name rt -d reuteras/docker-rt
-    docker exec -ti rt /bin/bash
-    # in the container
-    cd /tmp/rt/rt-4.4.*
-    make initdb
-    # enter password from step one
-    exit
+```
+    links:
+    - RT-Database:database
+    - MessageQueue:rabbitmq
+    - Fetchmail:fetchmail
+```
 
-## TODO
-Lots of things.
-
-* Solution for adding plugins
-
+**Head over the folder `ComposeFiles` on the repo for complete examples.**
