@@ -21,7 +21,7 @@ in order to provide internal fetchmail retrieval services.
 - Fully configurable through Docker ENV vars.
 - Active Directory/LDAP support.
 - Syslog support.
-- RTIR optionally available.
+- RTIR available optionally.
 - Loadbalancer support.
 - RabbitMQ integration for distributed incoming email handling.
 - Nodes with integrated healhcheck for self-healing, recovery.
