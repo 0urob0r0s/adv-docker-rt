@@ -1,5 +1,5 @@
 FROM debian:stretch
-MAINTAINER PR <code@ongoing.today>
+MAINTAINER JAGM <code@ongoing.today>
 
 # Perl settings -n to don't to tests
 ENV RT_FIX_DEPS_CMD /usr/bin/cpanm
@@ -25,21 +25,20 @@ RUN echo mail > /etc/hostname; \
         graphviz \
         make \
         libexpat1-dev \
-        libpq-dev \
+        libmysqlclient-dev \
         libgd-dev \
         libssl-dev \
-	libdbd-mysql-perl \
-	libnet-ldap-perl \
-	libcache-cache-perl \
+        libdbd-mysql-perl \
+        libnet-ldap-perl \
+        libcache-cache-perl \
         lighttpd \
         openssl \
         perl \
         postfix \
-        postgresql-client \
         ssl-cert \
         cron \
         amqp-tools \
-	supervisor && \
+        supervisor && \
 # Create user and group
     groupadd -r rt-service && \
     useradd -r -g rt-service -G www-data rt-service && \
@@ -64,7 +63,7 @@ RUN echo mail > /etc/hostname; \
         --with-bin-owner=rt-service \
         --with-libs-owner=rt-service \
         --with-libs-group=www-data \
-        --with-db-type=Pg \
+        --with-db-type=mysql \
         --with-web-user=www-data \
         --with-web-group=www-data \
         --prefix=/opt/rt4 \
