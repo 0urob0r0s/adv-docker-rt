@@ -25,7 +25,7 @@ RUN echo mail > /etc/hostname; \
         graphviz \
         make \
         libexpat1-dev \
-        libmysqlclient-dev \
+        default-libmysqlclient-dev \
         libgd-dev \
         libssl-dev \
         libdbd-mysql-perl \
