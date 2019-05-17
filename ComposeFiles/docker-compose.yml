@@ -18,6 +18,7 @@ services:
     image: 0urob0r0s/docker-adv-rt:latest
     environment:
       RT_LBURL: https://rt.example.com
+      RT_URL: rt.example.com
       RT_LDAP: '1'
       RT_LDAP_ATTR_ACCOUNT: sAMAccountName
       RT_LDAP_ATTR_MAIL: mail
@@ -41,7 +42,7 @@ services:
       RT_LOGPROTO: tcp
       RT_MAILOWNER: alerts@example.com
       RT_MAXATTACH: 10*1024*1024
-      RT_NAME: rt.example.com
+      RT_NAME: My RT4
       RT_ORG: example.com
       RT_RELAYHOST: 1.2.3.4
       RT_TIMEZONE: Europe/Zurich
