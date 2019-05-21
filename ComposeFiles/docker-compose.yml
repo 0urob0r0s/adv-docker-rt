@@ -83,6 +83,7 @@ services:
       FETCH_USERS: tickets@example.com
       FETCH_PASS: myemailpass
       FETCH_QUEUES: Tickets
+      FETCH_QUEUES_TYPE: Tickets
       FETCH_SYNC: '10'
       FETCH_TIMEOUT: '10'
       FETCH_POP3_SERVER: pop.gmail.com
