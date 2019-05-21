@@ -6,12 +6,12 @@ rt_config=/data/RT_SiteConfig.pm
 rt_configd=/opt/rt4/etc/RT_SiteConfig.d
 
 # Set local resolution
-echo "127.0.0.1 ${RT_URL:-rt.example.com}" >> /etc/hosts
+echo "127.0.0.1 ${RT_NAME:-rt.example.com}" >> /etc/hosts
 
 # Basic Settings
-echo 'Set($rtname, "RT_NAME");' | sed -e "s=RT_NAME=${RT_NAME:-RT4}=" > ${rt_config}
-echo 'Set($WebDomain, "RT_URL");' | sed -e "s=RT_URL=${RT_URL:-rt.example.com}=" >> ${rt_config}
-echo 'Set($WebBaseURL, "RT_LBURL");' | sed -e "s=RT_LBURL=${RT_LBURL:-http://${RT_URL:-rt.example.com}}=" >> ${rt_config}
+echo 'Set($rtname, "RT_NAME");' | sed -e "s=RT_NAME=${RT_NAME:-rt.example.com}=" > ${rt_config}
+echo 'Set($WebDomain, "RT_NAME");' | sed -e "s=RT_NAME=${RT_NAME:-rt.example.com}=" >> ${rt_config}
+echo 'Set($WebBaseURL, "RT_LBURL");' | sed -e "s=RT_LBURL=${RT_LBURL:-http://${RT_NAME:-rt.example.com}}=" >> ${rt_config}
 echo 'Set($Organization, "RT_ORG");' | sed -e "s=RT_ORG=${RT_ORG:-example.com}=" >> ${rt_config}
 echo 'Set($Timezone, "RT_TIMEZONE");' | sed -e "s=RT_TIMEZONE=${RT_TIMEZONE:-US/Eastern}=" >> ${rt_config}
 echo "Set(\$OwnerEmail, 'RT_MAILOWNER');" | sed -e "s=RT_MAILOWNER=${RT_MAILOWNER:-root}=" >> ${rt_config}
@@ -131,7 +131,7 @@ if [[ -z  "$RT_RELAYHOST" ]]; then
     exit 1
 fi
 
-sed -i -e "s=HOSTNAME=${RT_URL:-rt.example.com}=" /etc/lighttpd/conf-available/89-rt.conf
+sed -i -e "s=HOSTNAME=${RT_NAME:-rt.example.com}=" /etc/lighttpd/conf-available/89-rt.conf
 
 cat >> /opt/postfix.sh <<EOF
 #!/bin/bash
@@ -142,11 +142,11 @@ EOF
 
 chmod +x /opt/postfix.sh
 
-postconf -e myhostname="${RT_URL:-rt.example.com}"
+postconf -e myhostname="${RT_NAME:-rt.example.com}"
 postconf -e inet_interfaces=loopback-only
 postconf -e inet_protocols=ipv4
-postconf -e mydestination="${RT_URL:-rt.example.com}",localhost
-postconf -e myhostname="${RT_URL:-rt.example.com}"
+postconf -e mydestination="${RT_NAME:-rt.example.com}",localhost
+postconf -e myhostname="${RT_NAME:-rt.example.com}"
 postconf -e mynetworks=127.0.0.0/8
 postconf -e relayhost="$RT_RELAYHOST"
 
@@ -215,6 +215,7 @@ fi
 
 #### Queue consumption for Incoming Messages
 declare -a array_queue=(${FETCHMAIL_ENV_FETCH_QUEUES})
+declare -a array_type=(${FETCHMAIL_ENV_FETCH_QUEUES_TYPE})
 max_iteration=${#array_queue[@]}
 
 # Load Variables
@@ -225,11 +226,10 @@ amqp_connect=${RT_MQ_URI:-${amqp_connect_link}}
 if [ ${max_iteration} -gt 0 ]; then
 
 	for i in $(seq 0 $((max_iteration-1))); do
-	echo "* * * * * /usr/bin/flock -n /tmp/amqp-${array_queue[$i]}.lockfile /usr/bin/amqp-consume -c ${RT_MQ_RECYCLE:-100} -q '${array_queue[$i]}' --url='${amqp_connect}' /root/wrapper.sh '${array_queue[$i]}'" >> /tmp/mycron
+	echo "* * * * * /usr/bin/flock -n /tmp/amqp-${array_queue[$i]}.lockfile /usr/bin/amqp-consume -c ${RT_MQ_RECYCLE:-100} -q '${array_queue[$i]}' --url='${amqp_connect}' /root/wrapper.sh '${array_queue[$i]}' '${array_type[$i]}'" >> /tmp/mycron
 	done
 
 fi
-
 
 #### Cron Setup
 declare -p | grep -Ev 'BASHOPTS|BASH_VERSINFO|EUID|PPID|SHELLOPTS|UID' > /container.env
