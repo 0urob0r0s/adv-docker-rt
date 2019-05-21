@@ -226,7 +226,13 @@ amqp_connect=${RT_MQ_URI:-${amqp_connect_link}}
 if [ ${max_iteration} -gt 0 ]; then
 
 	for i in $(seq 0 $((max_iteration-1))); do
-	echo "* * * * * /usr/bin/flock -n /tmp/amqp-${array_queue[$i]}.lockfile /usr/bin/amqp-consume -c ${RT_MQ_RECYCLE:-100} -q '${array_queue[$i]}' --url='${amqp_connect}' /root/wrapper.sh '${array_queue[$i]}' '${array_type[$i]}'" >> /tmp/mycron
+	
+		if [ "${array_type[$i]}" = "comment" ]; then
+			echo "* * * * * /usr/bin/flock -n /tmp/amqp-${array_queue[$i]}.lockfile /usr/bin/amqp-consume -c ${RT_MQ_RECYCLE:-100} -q '${array_queue[$i]}' --url='${amqp_connect}/comment' /root/wrapper.sh '${array_queue[$i]}' '${array_type[$i]}'" >> /tmp/mycron
+		else
+			echo "* * * * * /usr/bin/flock -n /tmp/amqp-${array_queue[$i]}.lockfile /usr/bin/amqp-consume -c ${RT_MQ_RECYCLE:-100} -q '${array_queue[$i]}' --url='${amqp_connect}/correspond' /root/wrapper.sh '${array_queue[$i]}' '${array_type[$i]}'" >> /tmp/mycron
+		fi
+
 	done
 
 fi
