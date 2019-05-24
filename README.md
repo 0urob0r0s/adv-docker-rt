@@ -37,8 +37,9 @@ in order to provide internal fetchmail retrieval services.
       RT_DBUSER: rtuser                               #Schema user
       RT_DBPASS: rtpass                               #Schema pass
       RT_URL: rt.example.com                          #Hostname / Server URL
-      RT_LBURL: https://rt.example.com                #External Loadbalancer URL
-      RT_LDAP: '1'                                    #Enable LDAP Support
+      RT_LBURL: https://rt.example.com                				#External Loadbalancer URL
+      RT_URL_WHITELIST: rt.example.com:80 rt.example.com:443		#URL Whitelist for the CSRF Filter
+      RT_LDAP: '1'                                    				#Enable LDAP Support
       RT_LDAP_ATTR_ACCOUNT: sAMAccountName            #Account Attribute
       RT_LDAP_ATTR_MAIL: mail                         #Email Attribute
       RT_LDAP_ATTR_NAME: cn                                           #Real Name
@@ -85,6 +86,7 @@ Pay special attention to the linked server aliases, only specific ones could be 
 **Useful links**
 
  - RT and RTIR latest versions (use to get RT_RTIR_VER) - https://download.bestpractical.com/pub/rt/release/
+ - RT Documentation - https://docs.bestpractical.com/rt/4.4.4/RT_Config.html
  - RTIR documentation - https://docs.bestpractical.com/rtir/4.0.0/README.html
  - List of timezones - https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
  - Some extra steps inside RT - https://rt-wiki.bestpractical.com/wiki/ItsFinallyInstalledNowWhat#Allowing_users_to_open_tickets_via_E-mail

@@ -12,12 +12,13 @@ echo "127.0.0.1 ${RT_URL:-rt.example.com}" >> /etc/hosts
 echo 'Set($rtname, "RT_NAME");' | sed -e "s=RT_NAME=${RT_NAME:-RT4}=" > ${rt_config}
 echo 'Set($WebDomain, "RT_URL");' | sed -e "s=RT_URL=${RT_URL:-rt.example.com}=" >> ${rt_config}
 echo 'Set($WebBaseURL, "RT_LBURL");' | sed -e "s=RT_LBURL=${RT_LBURL:-http://${RT_URL:-rt.example.com}}=" >> ${rt_config}
+echo "Set(@ReferrerWhitelist, qw(${RT_URL_WHITELIST:-${RT_URL}:80 ${RT_URL}:443}));" >> ${rt_config}
+echo "Set(\$WebURL, RT->Config->Get('WebBaseURL') . RT->Config->Get('WebPath') . \"/\");" >> ${rt_config}
 echo 'Set($Organization, "RT_ORG");' | sed -e "s=RT_ORG=${RT_ORG:-example.com}=" >> ${rt_config}
 echo 'Set($Timezone, "RT_TIMEZONE");' | sed -e "s=RT_TIMEZONE=${RT_TIMEZONE:-US/Eastern}=" >> ${rt_config}
 echo "Set(\$OwnerEmail, 'RT_MAILOWNER');" | sed -e "s=RT_MAILOWNER=${RT_MAILOWNER:-root}=" >> ${rt_config}
 echo 'Set($MaxAttachmentSize, RT_MAXATTACH);' | sed -e "s=RT_MAXATTACH=${RT_MAXATTACH:-10*1024*1024}=" >> ${rt_config}
 echo "Set(\$RTAddressRegexp , 'RT_MAILREGEXP');" | sed -e "s=RT_MAILREGEXP=${RT_MAILREGEXP}=" >> ${rt_config}
-echo "Set(\$WebURL, RT->Config->Get('WebBaseURL') . RT->Config->Get('WebPath') . \"/\");" >> ${rt_config}
 
 # DB Settings
 echo 'Set($DatabaseType, "RT_DBTYPE");' | sed -e "s=RT_DBTYPE=${RT_DBTYPE:-mysql}=" > ${rt_configd}/database.pm
